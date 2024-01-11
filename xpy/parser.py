@@ -76,12 +76,25 @@ def parse(io: TextIOBase) -> str:
     for value in return_stmts.values():
         base_statement = "\n".join(value)
         final_indent = base_statement.split("\n")[-1][:-1]
+
         templated = base_statement.replace("return (", 'return dedent(f"""').replace(
             final_indent + ")", final_indent + '""").strip()'
         )
+
         modified_code = modified_code.replace(base_statement, templated)
 
-    regx.COMPONENTS = regx.component_regex(list(return_stmts.keys()))
+    # build component regex from import and plain function references
+    function_names = list(return_stmts.keys())
+    lines = regx.HTML_IMPORT.findall(modified_code)
+    for _, func in lines:
+        function_names.append(func)
+    original_lines = [f"from .{mod} import html {func}" for mod, func in lines]
+    regular_lines = [f"from .{mod} import {func}" for mod, func in lines]
+
+    for og_line, reg_line in zip(original_lines, regular_lines):
+        modified_code = modified_code.replace(og_line, reg_line)
+
+    regx.COMPONENTS = regx.component_regex(function_names)
 
     selected_insertions = regx.COMPONENTS.findall(modified_code)
     function_calls = [

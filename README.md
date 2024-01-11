@@ -42,4 +42,10 @@ module /
 
 `element.pyi` includes type stubs for `element.xpy` so your IDE doesn't freak out when you try to import an xpy module.
 
-All styles of importing *should work*, either when you import an xpy file from Python (or vice-versa), or when you import an xpy file from xpy itself. Try out the example kitchen-sink!
+Try out the kitchen-sink in elements to test xpy.
+
+## Stuff to implement
+
+- Importing elements
+- Fragment elements
+- Build CSS styles from objects, similar to React styles

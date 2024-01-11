@@ -7,6 +7,7 @@ IS_HTML_DIRECTIVE = re.compile(r"(html|def) (.*)(\(|\((.*?)\))(?:\))?(?:\:)?")
 RETURN = re.compile(r"\s*return (\(|<)(.*)(>|\)?)", flags=re.S)
 INSERTION = re.compile(r"\{(\s+|\n|\t|)+<(.*)\}", flags=re.S)
 INS_MODIFICATION = re.compile(r"(\s+)({(\s+)?<.*>(\s+)?})")
+HTML_IMPORT = re.compile(r"from .(.*) import html (.*)")
 COMPONENTS = None
 
 

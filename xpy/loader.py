@@ -31,6 +31,7 @@ class XPYFinder(importlib.abc.MetaPathFinder):
 
     def parse_file(self, module):
         path = Path(module + ".xpy")
+
         if path.exists():
             with open(path) as fh:
                 source = parse(fh)
