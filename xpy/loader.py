@@ -8,17 +8,34 @@ from pathlib import Path
 from .parser import parse
 
 
+
 class XPYFinder(importlib.abc.MetaPathFinder):
     def __init__(self, path):
         self.path = path
 
     def find_spec(self, module, path, target=None):
-        path = (Path(path or ".") / f"{module}.xpy").absolute()
-        with open(path) as fh:
+        if path is None:
+            return self.parse_file(module)
+
+        xpy_path: Path = Path(path[0]) / (module.split(".")[1] + ".xpy")
+        
+        if not xpy_path.exists():
+            return
+
+        with open(xpy_path) as fh:
             source = parse(fh)
 
         loader = XPYLoader(module, source, path)
         return importlib.machinery.ModuleSpec(module, loader, origin=path)
+
+    def parse_file(self, module):
+        path = Path(module + ".xpy")
+        if path.exists():
+            with open(path) as fh:
+                source = parse(fh)
+
+            loader = XPYLoader(module, source, path)
+            return importlib.machinery.ModuleSpec(module, loader, origin=path)
 
 
 class XPYLoader(importlib.abc.Loader):
