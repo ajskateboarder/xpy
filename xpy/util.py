@@ -1,12 +1,22 @@
+"""String utilities"""
+
+from __future__ import annotations
+from typing import TypedDict
 from itertools import takewhile
 from bs4 import BeautifulSoup
+
+
+class ParsedElement(TypedDict):
+    name: str
+    attrs: dict[str, str]
+    innerHTML: str
 
 
 def preceding_indents(line: str):
     return len([n for n in takewhile(lambda x: x == "", line.split(" "))])
 
 
-def parse_elements(elements: list[str]) -> list[str]:
+def parse_elements(elements: list[str]) -> list[ParsedElement]:
     soups = [BeautifulSoup(x, "html.parser") for x in elements]
     for soup in soups[:]:
         if len(soup.contents) == 2:

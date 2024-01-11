@@ -1,3 +1,5 @@
+"""Regular expressions"""
+
 from __future__ import annotations
 import re
 
@@ -6,6 +8,7 @@ RETURN = re.compile(r"\s*return (\(|<)(.*)(>|\)?)", flags=re.S)
 INSERTION = re.compile(r"\{(\s+|\n|\t|)+<(.*)\}", flags=re.S)
 INS_MODIFICATION = re.compile(r"(\s+)({(\s+)?<.*>(\s+)?})")
 COMPONENTS = None
+
 
 def component_regex(functions: list[str]):
     return re.compile(

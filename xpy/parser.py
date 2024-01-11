@@ -1,3 +1,5 @@
+"""XPy code parser"""
+
 from __future__ import annotations
 
 from io import TextIOBase
@@ -7,6 +9,8 @@ from .state import Continue, SkipOver, Code
 
 
 def parse(io: TextIOBase) -> str:
+    """Parse XPy code as plain Python"""
+
     code = list(map(lambda x: x.rstrip(), io.readlines())) + [""]
     return_stmts: dict[str, list] = {}
 

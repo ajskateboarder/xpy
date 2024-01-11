@@ -1,5 +1,8 @@
+"""Some stuff used for iterating over code"""
+
 from __future__ import annotations
 from dataclasses import dataclass
+
 
 class SkipOver(Exception):
     pass
