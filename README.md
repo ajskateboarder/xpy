@@ -42,10 +42,14 @@ module /
 
 `element.pyi` includes type stubs for `element.xpy` so your IDE doesn't freak out when you try to import an xpy module.
 
-Try out the kitchen-sink in elements to test xpy.
+You can test XPy's import hook and code generation using pytest:
+
+```bash
+pip install pytest
+pytest
+```
 
 ## Stuff to implement
 
-- Importing elements
 - Fragment elements
 - Build CSS styles from objects, similar to React styles
