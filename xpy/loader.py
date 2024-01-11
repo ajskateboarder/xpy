@@ -1,3 +1,5 @@
+"""Load all nearby .xpy files into the import system"""
+
 import sys
 import types
 
@@ -6,7 +8,6 @@ import importlib.machinery
 from pathlib import Path
 
 from .parser import parse
-
 
 
 class XPYFinder(importlib.abc.MetaPathFinder):
@@ -18,7 +19,7 @@ class XPYFinder(importlib.abc.MetaPathFinder):
             return self.parse_file(module)
 
         xpy_path: Path = Path(path[0]) / (module.split(".")[1] + ".xpy")
-        
+
         if not xpy_path.exists():
             return
 

@@ -1,3 +1,8 @@
 from setuptools import setup
 
-setup(name="xpy")
+setup(
+    name="xpy",
+    install_requires=[
+        "beautifulsoup4==4.12.2"
+    ]
+)

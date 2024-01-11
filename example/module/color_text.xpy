@@ -1,11 +1,5 @@
 from random import choice
-
-html colored_pg(__text, color):
-    return (
-        <p style="color: {color}">
-            {__text}
-        </p>
-    )
+from .cpg import colored_pg
 
 html main(__text):
     color = choice(['red', 'blue'])
