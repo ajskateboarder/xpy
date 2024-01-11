@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import sys
 
 from itertools import takewhile
 from io import TextIOBase
@@ -11,6 +12,7 @@ IS_HTML_DIRECTIVE = re.compile(r"(html|def) (.*)(\(|\((.*?)\))(?:\))?(?:\:)?")
 RETURN = re.compile(r"\s*return (\(|<)(.*)(>|\)?)", flags=re.S)
 INSERTION = re.compile(r"\{(\s+|\n|\t|)+<(.*)\}", flags=re.S)
 INS_MODIFICATION = re.compile(r"(\s+)({(\s+)?<.*>(\s+)?})")
+COMPONENTS = None
 
 
 class SkipOver(Exception):
@@ -25,69 +27,14 @@ def preceding_indents(line: str):
     return len([n for n in takewhile(lambda x: x == "", line.split(" "))])
 
 
-def find_insertions(
-    base_insertions: list[str], full_code: str
-) -> list[str | list[str]]:
-    selected_insertions = []
-
-    for insertion in base_insertions:
-        if insertion not in full_code:
-            indent = insertion.split("}")[0].split("\n")[1]
-
-            # i guess this can be slow but it works :)
-            def try_insertion(insertion, n=0):
-                final_insertion = insertion.replace("{", f"{indent}{{\n{(' ' * n)}")
-                if final_insertion in full_code:
-                    return final_insertion
-                else:
-                    return try_insertion(insertion, n + 1)
-
-            if _insertion := try_insertion(insertion):
-                insertion = _insertion
-
-        if insertion != "}":
-            selected_insertions.append(insertion)
-
-    selected_insertions = [
-        ins.replace("{", "").replace("}", "").strip() for ins in selected_insertions
-    ]
-    selected_insertions = [
-        [ins] if ins.startswith("<") and ins.endswith(">") else ins
-        for ins in selected_insertions
-    ]
-
-    return selected_insertions
-
-
-def flatten(lis):
-    rt = []
-    for i in lis:
-        if isinstance(i, list):
-            rt.extend(flatten(i))
-        else:
-            rt.append(i)
-    return rt
-
-
-def join_insertions(insertions):
-    new_insertions = []
-
-    for i, insertion in enumerate(insertions):
-        if isinstance(insertion, list):
-            new_insertions.append(insertion)
-        if isinstance(insertion, str) and (i + 1) != len(insertions):
-            new_insertions.append(insertion + insertions[i + 1])
-
-    return flatten(new_insertions)
-
-
 def parse_elements(soups: list[BeautifulSoup]) -> list[str]:
     for soup in soups[:]:
         if len(soup.contents) == 2:
             start = soup.contents[0]
             if start.startswith(">") and not start.endswith(">"):
-                soups[soups.index(soup)] = BeautifulSoup("".join(list(reversed(soup.contents))), "html.parser")
-    print(soups)
+                soups[soups.index(soup)] = BeautifulSoup(
+                    "".join(list(reversed(soup.contents))), "html.parser"
+                )
 
     return [
         {
@@ -100,9 +47,18 @@ def parse_elements(soups: list[BeautifulSoup]) -> list[str]:
     ]
 
 
+def wrap_f_string(string: str) -> str:
+    if string.startswith("{") and string.endswith("}"):
+        return 'f"' + string + '"'
+    else:
+        return string
+
+
 def element_to_function(elem: dict) -> str:
-    args = ", ".join([f"{k}={v}" for k, v in elem["attrs"].items()])
-    return f"{elem['name']}('{elem['innerHTML']}'{',' if args else ''}{args})"
+    args = ", ".join([f"{k}={wrap_f_string(v)}" for k, v in elem["attrs"].items()])
+    function_call = f"{elem['name']}(f'{elem['innerHTML']}'{',' if args else ''}{args})"
+    print(function_call, file=sys.stderr)
+    return function_call
 
 
 def parse(io: TextIOBase) -> str:
@@ -181,29 +137,22 @@ def parse(io: TextIOBase) -> str:
         )
         modified_code = modified_code.replace(base_statement, templated)
 
-    base_insertions = [
-        i + "}"
-        for i in (
-            next(
-                "{<" + item
-                for item in INSERTION.findall(modified_code)[0]
-                if item.strip() != ""
-            )
-            + "}"
-        ).split("}")
+    function_names = list(return_stmts.keys())
+    COMPONENTS = re.compile(
+        fr"<(?:{'|'.join(function_names)}).*>\n*.*\n*.*<\/(?:{'|'.join(function_names)})>"
+    )
+
+    selected_insertions = COMPONENTS.findall(modified_code)
+    print(selected_insertions, fr"<(?:{'|'.join(function_names)}).*>\n*.*\n*<\/(?:{'|'.join(function_names)})>")
+    function_calls = [
+        element_to_function(function)
+        for function in parse_elements(
+            [BeautifulSoup(x, "html.parser") for x in selected_insertions]
+        )
     ]
 
-    selected_insertions = join_insertions(
-        find_insertions(base_insertions, modified_code)
-    )
+    for elem, function in zip(selected_insertions, function_calls):
+        modified_code = modified_code.replace(elem.rstrip(), f"{{{function}}}")
 
-    function_calls = parse_elements(
-        [BeautifulSoup(x, "html.parser") for x in selected_insertions]
-    )
-    elem_calls = ["".join(match) for match in INS_MODIFICATION.findall(modified_code)]
-    elem_calls = [elem for elem in elem_calls if any(func in elem for func in return_stmts.keys())]
-    
-    for elem, function in zip(elem_calls, function_calls):
-        modified_code = modified_code.replace(elem.rstrip(), f"{{{element_to_function(function)}}}")
-
+    print(modified_code)
     return modified_code

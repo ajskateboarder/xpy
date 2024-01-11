@@ -20,6 +20,7 @@ class XPYFinder(importlib.abc.MetaPathFinder):
         loader = XPYLoader(module, source, path)
         return importlib.machinery.ModuleSpec(module, loader, origin=path)
 
+
 class XPYLoader(importlib.abc.Loader):
     def __init__(self, module_name, source, path) -> None:
         self.module_name = module_name
@@ -41,6 +42,7 @@ class XPYLoader(importlib.abc.Loader):
     def get_source(self, name):
         return self.source
 
-def add_all_xpys(path):
+
+def add_all_xpys():
     for xpy_path in Path.cwd().glob("**/*.xpy"):
         sys.meta_path.append(XPYFinder(xpy_path))
