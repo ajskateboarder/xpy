@@ -42,11 +42,19 @@ module /
 
 `element.pyi` includes type stubs for `element.xpy` so your IDE doesn't freak out when you try to import an xpy module.
 
-You can test XPy's import hook and code generation using pytest:
+You can test XPy's import hook and code generation using pytest.
 
 ```bash
 pip install pytest
 pytest
+```
+
+## VSCode syntax highlighting
+
+Install the XPy syntax highlight extension by copying the `xpy-language` to your extensions in the `.vscode` folder, or `.vscode-oss` for VSCodium, and then restart VSCode.
+
+```bash
+cp -r xpy-language ~/.vscode-oss/extensions
 ```
 
 ## Stuff to implement

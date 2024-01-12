@@ -1,0 +1,25 @@
+{
+  "name": "xpy-language",
+  "displayName": "xpy-language",
+  "description": "XPY",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "xpy",
+      "aliases": ["XPy", "xpy"],
+      "extensions": [".xpy"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "xpy",
+      "scopeName": "source.xpy",
+      "path": "./syntaxes/xpy.tmLanguage.json"
+    }]
+  }
+}

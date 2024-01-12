@@ -9,6 +9,7 @@ html colored_pg(__text, color):
 
 html main(__text):
     color = choice(['red', 'blue'])
+    
     return (
         <colored_pg color={color}>
             {__text} 1
