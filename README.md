@@ -24,7 +24,7 @@ html main(__text):
 
 ```py
 # main.py
-import xpy
+import xpy.load
 
 from doc import main
 

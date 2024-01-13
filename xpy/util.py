@@ -2,19 +2,13 @@
 
 from __future__ import annotations
 from typing import TypedDict
-from itertools import takewhile
 from bs4 import BeautifulSoup
-from copy import deepcopy
 
 
 class ParsedElement(TypedDict):
     name: str
     attrs: dict[str, str]
     innerHTML: str
-
-
-def preceding_indents(line: str):
-    return len([n for n in takewhile(lambda x: x == "", line.split(" "))])
 
 
 def parse_elements(elements: list[str]) -> list[ParsedElement]:
@@ -49,7 +43,7 @@ def wrap_f_string(string: str) -> str:
 def element_to_function(elem: dict) -> str:
     attrs: dict = elem["attrs"]
     args = ", ".join([f"{k}={wrap_f_string(v)}" for k, v in attrs.items()])
-    quote = "'" if "\"" in elem["innerHTML"] else "\""
+    quote = "'" if '"' in elem["innerHTML"] else '"'
     if quote == "'":
         function_call = f"{elem['name']}(f{quote}{elem['innerHTML']}{quote}{',' if args else ''}{args})"
     else:

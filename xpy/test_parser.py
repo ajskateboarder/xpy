@@ -6,7 +6,7 @@ import sys
 from runpy import run_path, run_module
 
 import ast
-from xpy.parser import parse
+from .parser import parse
 
 
 TEST_CODE = [
