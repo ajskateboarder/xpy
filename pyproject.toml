@@ -1,0 +1,3 @@
+[tool.pytest.ini_options]
+addopts = "--spec"
+spec_test_format = "{result} {docstring_summary}"

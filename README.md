@@ -1,8 +1,9 @@
 # XPy
 
-A no-nonsense HTML syntax preprocessor for Python, powered by magical Regex, BeautifulSoup4, and the mystical import system.
+A no-nonsense HTML syntax preprocessor for Python, powered by magical Regex, BeautifulSoup4, and the mystical import system. XPy converts JSX-esque code written in ".xpy" files into plain Python code with f-strings at import-time, with no build step required.
 
 ```py
+# doc.xpy
 from random import choice
 
 html colored_pg(__text, color):
@@ -22,6 +23,7 @@ html main(__text):
 ```
 
 ```py
+# main.py
 import xpy
 
 from doc import main
@@ -60,4 +62,5 @@ cp -r xpy-language ~/.vscode-oss/extensions
 ## Stuff to implement
 
 - Fragment elements
+- Basic syntax errors, similar to Rust's [typed_html](https://docs.rs/typed-html/) crate
 - Build CSS styles from objects, similar to React styles

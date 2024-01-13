@@ -5,95 +5,43 @@ from __future__ import annotations
 from io import TextIOBase
 
 from . import util, regx
-from .state import Continue, SkipOver, Code
 
 
 def parse(io: TextIOBase) -> str:
     """Parse XPy code as plain Python"""
 
     code = list(map(lambda x: x.rstrip(), io.readlines())) + [""]
-    return_stmts: dict[str, list] = {}
+    modified_code = "\n".join(["from textwrap import dedent"] + code)
+    function_names = [e[1] for e in regx.HTML_IMPORT.findall(modified_code)]
 
-    modified_code = ["from textwrap import dedent"]
-    c = Code()
-
-    while c.line_index < len(code):
-        line = code[c.line_index]
-
-        try:
-            # function opening
-            if html := regx.IS_HTML_DIRECTIVE.match(line):
-                if html.group(1) == "def":
-                    raise SkipOver
-                function_name = (
-                    html.group().split(" ")[1].replace("(", "").replace("):", "")
-                )
-                modified_code.append(line.replace("html", "def", 1))
-                c.html_func = function_name
-                return_stmts[function_name] = []
-                raise Continue
-
-        except SkipOver:
-            pass
-
-        except Continue:
-            c.line_index += 1
-            continue
-
-        # return opening
-        if c.html_func is not None and (ret := regx.RETURN.match(line)):
-            opening, content, _ = ret.groups()
-            if opening == "(" and content == "":
-                c.at_return = True
-                modified_code.append(line)
-                return_stmts[c.html_func].append(line)
-                c.line_index += 1
-                continue
-
-        # function closing
-        if c.html_func != None:
-            if util.preceding_indents(line) == 0 or line.strip() == "":
-                c.html_func = None
-                modified_code.append(line)
-                c.line_index += 1
-                continue
-
-        # return closing
-        if c.at_return and c.html_func != None:
-            return_stmts[function_name].append(line)
-            if line.strip() == ")":
-                c.at_return = False
-                modified_code.append(line)
-                c.line_index += 1
-                continue
-
-        # default case
-        modified_code.append(line)
-        c.line_index += 1
-
-    modified_code = "\n".join(modified_code)
-
-    for value in return_stmts.values():
-        base_statement = "\n".join(value)
-        final_indent = base_statement.split("\n")[-1][:-1]
-
-        templated = base_statement.replace("return (", 'return dedent(f"""').replace(
-            final_indent + ")", final_indent + '""").strip()'
+    for function_sig in regx.HTML_DIRECTIVE.findall(modified_code):
+        function_sig = list(function_sig)
+        function_names.append(function_sig[1])
+        modified_code = modified_code.replace(
+            " ".join(function_sig), " ".join(["def"] + function_sig[1:])
         )
 
-        modified_code = modified_code.replace(base_statement, templated)
+    # replace all html element references with escaped
+    for component in regx.HTML_ELEMENT.findall(modified_code):
+        if not "'" in component:
+            _cmp = component.replace("'", '"')
+            escaped_component = f"f'{_cmp}'"
+        elif not '"' in component:
+            escaped_component = f'f"{component}"'
+        else:
+            escaped_component = f'f"""{component}"""'
+        modified_code = modified_code.replace(component, escaped_component, 1)
 
-    # build component regex from import and plain function references
-    function_names = list(return_stmts.keys())
+    # replace html imps. with regular ones
     lines = regx.HTML_IMPORT.findall(modified_code)
     for _, func in lines:
         function_names.append(func)
-    original_lines = [f"from .{mod} import html {func}" for mod, func in lines]
-    regular_lines = [f"from .{mod} import {func}" for mod, func in lines]
+    original_lines = [f"from {mod} import html {func}" for mod, func in lines]
+    regular_lines = [f"from {mod} import {func}" for mod, func in lines]
 
+    # convert all user-defd components into function references
     for og_line, reg_line in zip(original_lines, regular_lines):
         modified_code = modified_code.replace(og_line, reg_line)
-
     regx.COMPONENTS = regx.component_regex(function_names)
 
     selected_insertions = regx.COMPONENTS.findall(modified_code)

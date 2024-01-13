@@ -62,6 +62,5 @@ class XPYLoader(importlib.abc.Loader):
         return self.source
 
 
-def add_all_xpys():
-    for xpy_path in Path.cwd().glob("**/*.xpy"):
-        sys.meta_path.append(XPYFinder(xpy_path))
+for xpy_path in Path.cwd().glob("**/*.xpy"):
+    sys.meta_path.append(XPYFinder(xpy_path))
