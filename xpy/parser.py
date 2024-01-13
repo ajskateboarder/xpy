@@ -23,13 +23,8 @@ def parse(io: TextIOBase) -> str:
 
     # replace all html element references with escaped
     for component in regx.HTML_ELEMENT.findall(modified_code):
-        if not "'" in component:
-            _cmp = component.replace("'", '"')
-            escaped_component = f"f'{_cmp}'"
-        elif not '"' in component:
-            escaped_component = f'f"{component}"'
-        else:
-            escaped_component = f'f"""{component}"""'
+        print(component)
+        escaped_component = f'f"""{component}"""'
         modified_code = modified_code.replace(component, escaped_component, 1)
 
     # replace html imps. with regular ones
@@ -53,4 +48,5 @@ def parse(io: TextIOBase) -> str:
     for elem, function in zip(selected_insertions, function_calls):
         modified_code = modified_code.replace(elem.rstrip(), f"{{{function}}}")
 
+    print(modified_code)
     return modified_code

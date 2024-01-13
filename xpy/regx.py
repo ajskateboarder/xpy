@@ -7,7 +7,7 @@ HTML_DIRECTIVE = re.compile(
     r"(html|def) (.*)(?:\(|\(.*?\))(?:\))?(?:\:)?"
 )  # simplify this abomination
 HTML_IMPORT = re.compile(r"from (.*) import html (.*)")
-HTML_ELEMENT = re.compile(r"<.*>\n*.*\n*.*<\/.*>")
+HTML_ELEMENT = re.compile(r"<.*(?:>\n*.*\n*(?:.*)?<\/.*>| \/>)")
 COMPONENTS = None
 
 
