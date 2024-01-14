@@ -37,7 +37,7 @@ def wrap_f_string(string: str) -> str:
     if string.startswith("{") and string.endswith("}"):
         return 'f"' + string + '"'
     else:
-        return string
+        return f'"{string}"'
 
 
 def element_to_function(elem: dict) -> str:

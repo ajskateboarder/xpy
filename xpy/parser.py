@@ -23,18 +23,19 @@ def parse(io: TextIOBase) -> str:
 
     # replace all html element references with escaped
     for component in regx.HTML_ELEMENT.findall(modified_code):
-        print(component)
         escaped_component = f'f"""{component}"""'
         modified_code = modified_code.replace(component, escaped_component, 1)
 
     # replace html imps. with regular ones
     lines = regx.HTML_IMPORT.findall(modified_code)
+
     for _, func in lines:
         function_names.append(func)
+
     original_lines = [f"from {mod} import html {func}" for mod, func in lines]
     regular_lines = [f"from {mod} import {func}" for mod, func in lines]
 
-    # convert all user-defd components into function references
+    # convert all user-defd components into function calls
     for og_line, reg_line in zip(original_lines, regular_lines):
         modified_code = modified_code.replace(og_line, reg_line)
     regx.COMPONENTS = regx.component_regex(function_names)
@@ -48,5 +49,4 @@ def parse(io: TextIOBase) -> str:
     for elem, function in zip(selected_insertions, function_calls):
         modified_code = modified_code.replace(elem.rstrip(), f"{{{function}}}")
 
-    print(modified_code)
     return modified_code

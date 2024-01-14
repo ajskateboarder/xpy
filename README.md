@@ -61,6 +61,7 @@ cp -r xpy-language ~/.vscode-oss/extensions
 
 ## Stuff to implement
 
+- Allow element props to span multiple lines - I'll need to find a clever regex for this...
 - Fragment elements
 - Basic syntax errors, similar to Rust's [typed_html](https://docs.rs/typed-html/) crate
 - Build CSS styles from objects, similar to React styles

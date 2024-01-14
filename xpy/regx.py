@@ -13,5 +13,5 @@ COMPONENTS = None
 
 def component_regex(functions: list[str]):
     return re.compile(
-        rf"<(?:{'|'.join(functions)}).*>\n*.*\n*.*<\/(?:{'|'.join(functions)})>"
+        rf"<(?:{'|'.join(functions)}).*(?:>\n*.*\n*(?:{'|'.join(functions)})>| \/>)"
     )
